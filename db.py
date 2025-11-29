@@ -2,7 +2,7 @@ import mysql.connector
 
 DB_HOST = "localhost"
 DB_USER = "root"
-DB_PASSWORD = "$occer08Fire!"
+DB_PASSWORD = "PW"
 DB_NAME = "er_hospital_management"
 
 
