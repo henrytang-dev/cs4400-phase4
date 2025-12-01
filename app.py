@@ -5,7 +5,9 @@ from datetime import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-
+@app.route("/")
+def home():
+    return "Hello, this is CS4400 Phase IV Page!"
 
 def get_int(value):
     try:
@@ -149,7 +151,7 @@ def patient_funds_and_charges(ssn):
 def combine_dt(date_str, time_str):
     try:
         d = datetime.strptime(date_str, "%Y-%m-%d").date()
-        t = datetime.strptime(time_str, "%H:%M").time()
+        t = datetime.strptime(time_str, "%H:%M:%S").time()
         return datetime.combine(d, t)
     except Exception:
         return None
@@ -469,6 +471,7 @@ def complete_orders():
         
         return error("invalid input")
     success, err = execute_procedure("complete_orders", (num_orders,))
+    success, err = execute_procedure("complete_orders", (num_orders,))
     if not success:
         return error(err or "Database error")
     return jsonify({"success": True})
@@ -566,6 +569,7 @@ def remove_staff():
         return error("Invalid input")
     if not staff_exists(ssn):
         return error("Staff not found")
+    success, err = execute_procedure("remove_staff", (ssn,))
     success, err = execute_procedure("remove_staff", (ssn,))
     if not success:
         return error(err or "Database error")
