@@ -148,6 +148,10 @@ def patient_funds_and_charges(ssn):
     return row or {"funds": None, "charges": None}
 
 
+def count_orders():
+    return get_scalar("select count(*) from med_order", ())
+
+
 def combine_dt(date_str, time_str):
     try:
         d = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -426,8 +430,8 @@ def place_order():
     doctor_id = data.get("doctorId")
     
     cost = get_int(data.get("cost"))
-    lab_type = data.get("labType")
-    drug = data.get("drug")
+    lab_type = (data.get("labType") or "").strip() or None
+    drug = (data.get("drug") or "").strip() or None
     dosage = get_int(data.get("dosage"))
     if (
         order_number is None or order_number <= 0 or priority is None or priority < 1 or priority > 5
@@ -470,11 +474,16 @@ def complete_orders():
     if num_orders is None or num_orders <= 0:
         
         return error("invalid input")
-    success, err = execute_procedure("complete_orders", (num_orders,))
+    before = count_orders() or 0
     success, err = execute_procedure("complete_orders", (num_orders,))
     if not success:
         return error(err or "Database error")
-    return jsonify({"success": True})
+    after = count_orders() or 0
+    completed = max(0, before - after)
+    resp = {"success": True, "completed": completed}
+    if completed > num_orders:
+        resp["note"] = "more orders completed than requested"
+    return jsonify(resp)
 
 
 @app.route("/api/rooms/assign_nurse", methods=["POST"])
