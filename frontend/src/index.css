@@ -65,7 +65,7 @@ h1 {
 
 .form-grid {
   display: grid;
-  gap: 10px;
+  gap: 20px;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
