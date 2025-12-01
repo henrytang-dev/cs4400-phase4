@@ -91,23 +91,23 @@ def fetch_view(query):
 
 
 def patient_exists(ssn):
-    return bool(get_scalar("select 1 from patient where ssn=%s", (ssn)))
+    return bool(get_scalar("select 1 from patient where ssn=%s", (ssn,)))
 
 
 def staff_exists(ssn):
-    return bool(get_scalar("select 1 from staff where ssn=%s", (ssn)))
+    return bool(get_scalar("select 1 from staff where ssn=%s", (ssn,)))
 
 
 def doctor_exists(ssn):
-    return bool(get_scalar("select 1 from doctor where ssn=%s", (ssn)))
+    return bool(get_scalar("select 1 from doctor where ssn=%s", (ssn,)))
 
 
 def nurse_exists(ssn):
-    return bool(get_scalar("select 1 from nurse where ssn=%s", (ssn)))
+    return bool(get_scalar("select 1 from nurse where ssn=%s", (ssn,)))
 
 
 def dept_exists(dept_id):
-    return bool(get_scalar("select 1 from department where deptId=%s", (dept_id)))
+    return bool(get_scalar("select 1 from department where deptId=%s", (dept_id,)))
 
 
 def works_in(ssn, dept_id):
@@ -126,11 +126,11 @@ def appointment_exists(patient_id, appt_date, appt_time):
 
 
 def patient_has_appointments(ssn):
-    return bool(get_scalar("select 1 from appointment where patientId=%s limit 1", (ssn)))
+    return bool(get_scalar("select 1 from appointment where patientId=%s limit 1", (ssn,)))
 
 
 def patient_has_orders(ssn):
-    return bool(get_scalar("select 1 from med_order where patientId=%s limit 1", (ssn)))
+    return bool(get_scalar("select 1 from med_order where patientId=%s limit 1", (ssn,)))
 
 
 def patient_funds_and_charges(ssn):
@@ -140,7 +140,8 @@ def patient_funds_and_charges(ssn):
         left join (select patientId, sum(cost) as totalCost from appointment group by patientId) a on a.patientId = patient.ssn
         left join (select patientId, sum(cost) as totalCost from med_order group by patientId) o on o.patientId = patient.ssn
         where patient.ssn = %s
-        """, (ssn)
+        """,
+        (ssn,),
     )
     return row or {"funds": None, "charges": None}
 
@@ -231,11 +232,11 @@ def remove_staff_from_dept():
         return error("Invalid input")
     if not works_in(ssn, dept_id):
         return error("Staff is not in department")
-    manager = get_scalar("select manager from department where deptId=%s", (dept_id))
+    manager = get_scalar("select manager from department where deptId=%s", (dept_id,))
     
     if manager == ssn:
         return error("Cannot remove department manager")
-    staff_count = get_scalar("select count(*) from works_in where deptId=%s", (dept_id))
+    staff_count = get_scalar("select count(*) from works_in where deptId=%s", (dept_id,))
     if staff_count is not None and staff_count <= 1:
         return error("Department must keep at least one staff")
     success, err = execute_procedure("remove_staff_from_dept", (ssn, dept_id))
@@ -257,7 +258,7 @@ def manage_department():
         return error("Staff not found")
     if not dept_exists(dept_id):
         return error("Department not found")
-    if get_scalar("select count(*) from department where manager=%s", (ssn)) > 0:
+    if get_scalar("select count(*) from department where manager=%s", (ssn,)) > 0:
         return error("Staff already manages a department")
     lone_rows = get_row(
         """
@@ -269,7 +270,7 @@ def manage_department():
     success, err = execute_procedure("manage_department", (ssn, dept_id))
     if not success:
         return error(err or "Database error")
-    manager = get_scalar("select manager from department where deptId=%s", (dept_id))
+    manager = get_scalar("select manager from department where deptId=%s", (dept_id,))
     if manager != ssn:
         return error("Manager not assigned")
     return jsonify({"success": True})
@@ -445,7 +446,7 @@ def place_order():
             return error("Prescription requires drug and dosage")
         if dosage <= 0:
             return error("Invalid dosage")
-    if get_scalar("select 1 from med_order where orderNumber=%s", (order_number)):
+    if get_scalar("select 1 from med_order where orderNumber=%s", (order_number,)):
         return error("order number already exists")
     
     funds = patient_funds_and_charges(patient_id)
@@ -454,7 +455,7 @@ def place_order():
     success, err = execute_procedure("place_order", (order_number, priority, patient_id, doctor_id, cost, lab_type, drug, dosage))
     if not success:
         return error(err or "Database error")
-    if not get_scalar("select 1 from med_order where orderNumber=%s", (order_number)):
+    if not get_scalar("select 1 from med_order where orderNumber=%s", (order_number,)):
         return error("Order not placed")
     return jsonify({"success": True})
 
@@ -467,7 +468,7 @@ def complete_orders():
     if num_orders is None or num_orders <= 0:
         
         return error("invalid input")
-    success, err = execute_procedure("complete_orders", (num_orders))
+    success, err = execute_procedure("complete_orders", (num_orders,))
     if not success:
         return error(err or "Database error")
     return jsonify({"success": True})
@@ -515,7 +516,7 @@ def assign_patient():
     if not patient_exists(ssn):
         return error("Patient not found")
     
-    room_row = get_row("select roomType, occupiedBy from room where roomNumber=%s", (room_number))
+    room_row = get_row("select roomType, occupiedBy from room where roomNumber=%s", (room_number,))
     if not room_row:
         return error("Room not found")
     if room_row["roomType"] != room_type:
@@ -525,7 +526,7 @@ def assign_patient():
     success, err = execute_procedure("assign_room_to_patient", (ssn, room_number, room_type))
     if not success:
         return error(err or "Database error")
-    occupied = get_scalar("select occupiedBy from room where roomNumber=%s", (room_number))
+    occupied = get_scalar("select occupiedBy from room where roomNumber=%s", (room_number,))
     
     if occupied != ssn:
         return error("Room not assigned")
@@ -539,12 +540,12 @@ def release_room():
     
     if room_number is None:
         return error("Invalid input")
-    if not get_scalar("select 1 from room where roomNumber=%s", (room_number)):
+    if not get_scalar("select 1 from room where roomNumber=%s", (room_number,)):
         return error("Room not found")
-    success, err = execute_procedure("release_room", (room_number))
+    success, err = execute_procedure("release_room", (room_number,))
     if not success:
         return error(err or "Database error")
-    if get_scalar("select occupiedBy from room where roomNumber=%s", (room_number)):
+    if get_scalar("select occupiedBy from room where roomNumber=%s", (room_number,)):
         return error("Room not released")
     return jsonify({"success": True})
 
@@ -565,7 +566,7 @@ def remove_staff():
         return error("Invalid input")
     if not staff_exists(ssn):
         return error("Staff not found")
-    success, err = execute_procedure("remove_staff", (ssn))
+    success, err = execute_procedure("remove_staff", (ssn,))
     if not success:
         return error(err or "Database error")
     if staff_exists(ssn):
@@ -590,7 +591,7 @@ def remove_patient():
     if blockers:
         return error("Cannot remove patient with existing " + " and ".join(blockers))
     
-    success, err = execute_procedure("remove_patient", (ssn))
+    success, err = execute_procedure("remove_patient", (ssn,))
     if not success:
         return error(err or "Database error")
     if patient_exists(ssn):
