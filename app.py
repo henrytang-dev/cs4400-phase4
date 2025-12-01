@@ -174,6 +174,8 @@ def add_patient():
     funds_val = get_int(data.get("funds"))
     if funds_val is None:
         return error("Invalid funds")
+    if patient_exists(data.get("ssn")):
+        return error("Patient already exists")
     
     success, err = execute_procedure("add_patient", (data.get("ssn"), data.get("first_name"), data.get("last_name"), data.get("birthdate"), data.get("address"), funds_val, data.get("contact")))
     if not success:
