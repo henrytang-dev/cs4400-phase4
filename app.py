@@ -6,7 +6,6 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-
 def get_int(value):
     try:
         return int(value)
@@ -148,7 +147,7 @@ def patient_funds_and_charges(ssn):
 def combine_dt(date_str, time_str):
     try:
         d = datetime.strptime(date_str, "%Y-%m-%d").date()
-        t = datetime.strptime(time_str, "%H:%M").time()
+        t = datetime.strptime(time_str, "%H:%M:%S").time()
         return datetime.combine(d, t)
     except Exception:
         return None
@@ -232,7 +231,6 @@ def remove_staff_from_dept():
     if not works_in(ssn, dept_id):
         return error("Staff is not in department")
     manager = get_scalar("select manager from department where deptId=%s", (dept_id))
-    
     if manager == ssn:
         return error("Cannot remove department manager")
     staff_count = get_scalar("select count(*) from works_in where deptId=%s", (dept_id))
@@ -467,7 +465,7 @@ def complete_orders():
     if num_orders is None or num_orders <= 0:
         
         return error("invalid input")
-    success, err = execute_procedure("complete_orders", (num_orders))
+    success, err = execute_procedure("complete_orders", (num_orders,))
     if not success:
         return error(err or "Database error")
     return jsonify({"success": True})
@@ -565,7 +563,7 @@ def remove_staff():
         return error("Invalid input")
     if not staff_exists(ssn):
         return error("Staff not found")
-    success, err = execute_procedure("remove_staff", (ssn))
+    success, err = execute_procedure("remove_staff", (ssn,))
     if not success:
         return error(err or "Database error")
     if staff_exists(ssn):
