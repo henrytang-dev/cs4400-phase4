@@ -1,7 +1,5 @@
 ## Phase IV READ ME
 
------
-
 ### 1\. Application Setup Instructions
 
 The application is a full-stack app which needs configuration for the database, backend API, and frontend client.
