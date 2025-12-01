@@ -5,6 +5,9 @@ from datetime import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+@app.route("/")
+def home():
+    return "Hello, this is CS4400 Phase IV Page!"
 
 def get_int(value):
     try:
