@@ -11,9 +11,9 @@ body {
 }
 
 .app {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px;
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 32px;
 }
 
 h1 {
@@ -29,6 +29,7 @@ h1 {
 }
 .tab-button {
   padding: 10px 14px;
+  margin: 6px 4px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #e2e8f0;
