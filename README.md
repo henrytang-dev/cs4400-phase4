@@ -7,7 +7,7 @@ The application is a full-stack app which needs configuration for the database, 
 #### 1.1. Database Configuration (MySQL)
 
 1.  Modify the `db.py` file in the root directory to contain the correct connection parameters (host, user, password, and database name) for your MySQL server instance.
-2.  sure that the entire database structure, including all **tables, views (1-5)**, and **stored procedures (6-17, plus `remove_staff`)** outlined in the project specification have been loaded into the MySQL database prior to running the application.
+2.  Make sure that the entire database structure, including all **tables, views**, and **stored procedures, plus `remove_staff`)** outlined in the project specification have been loaded into the MySQL database prior to running the application.
 
 #### 1.2. Backend Setup (Python/Flask)
 
