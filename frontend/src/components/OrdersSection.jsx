@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { post } from "../api";
+import { post, get } from "../api";
+import DataTable from "./DataTable";
 
 export default function OrdersSection() {
   const [placeForm, setPlaceForm] = useState({
     orderNumber: "", priority: "", patientId: "", doctorId: "", cost: "", labType: "", drug: "", dosage: "",
   });
   const [completeForm, setCompleteForm] = useState({ num_orders: "" });
+  const [orders, setOrders] = useState([]);
   const [message, setMessage] = useState("");
 
   const handlePlaceChange = (e) => {
@@ -38,6 +40,17 @@ export default function OrdersSection() {
     }
   };
 
+  const loadOrders = async () => {
+    setMessage("");
+    try {
+      const res = await get("/api/orders/view");
+      setOrders(res.data || []);
+      setMessage("Orders loaded");
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
   return (
     <div className="section">
       <div className="card">
@@ -62,9 +75,11 @@ export default function OrdersSection() {
           <input name="num_orders" placeholder="Number of orders" value={completeForm.num_orders} onChange={handleCompleteChange} />
           <div className="actions">
             <button type="submit">Complete</button>
+            <button type="button" className="secondary" onClick={loadOrders}>Load Orders</button>
           </div>
         </form>
       </div>
+      <DataTable rows={orders} />
       {message && <div className="message">{message}</div>}
     </div>
   );

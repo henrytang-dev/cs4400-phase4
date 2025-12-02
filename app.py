@@ -468,6 +468,22 @@ def place_order():
     return jsonify({"success": True})
 
 
+@app.route("/api/orders/view", methods=["GET"])
+def orders_view():
+    query = """
+    select m.orderNumber, m.orderDate, m.priority, m.patientId, m.doctorId, m.cost,
+           lw.labType, p.drug, p.dosage
+    from med_order m
+    left join lab_work lw on lw.orderNumber = m.orderNumber
+    left join prescription p on p.orderNumber = m.orderNumber
+    order by m.orderDate desc, m.priority desc, m.orderNumber desc
+    """
+    success, data = fetch_view(query)
+    if success:
+        return jsonify({"success": True, "data": data})
+    return error(data or "Database error")
+
+
 @app.route("/api/orders/complete", methods=["POST"])
 def complete_orders():
     data = request.get_json()
